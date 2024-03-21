@@ -4,19 +4,19 @@ import { ArrowImage, ListImage, TaskImage } from '../styles/image'
 import { ItemView, TaskView } from '../styles/wrapper'
 import { TaskTitle } from '../styles/text'
 
-const ListItem = () => {
+const ListItem = ({ type, name, image }: { type: string, name: string, image: string }) => {
     return (
         <ListButton>
             <ListImage
-                source={require('../assets/images/image1.png')}
+                source={{ uri: image }}
             />
             <ItemView>
-                <TaskTitle>Play a game</TaskTitle>
+                <TaskTitle>{name}</TaskTitle>
                 <TaskView>
                     <TaskImage
                         source={require('../assets/images/task.png')}
                     />
-                    <TaskTitle>Running Now</TaskTitle>
+                    <TaskTitle>{type}</TaskTitle>
                 </TaskView>
             </ItemView>
             <ArrowImage

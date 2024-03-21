@@ -81,9 +81,7 @@ export const FilterView = styled.View`
   width: 40px;
   margin-left: 13px;
 `;
-export const ListView = styled.FlatList`
-
-`
+export const ListView = styled.FlatList``;
 export const ItemView = styled.View`
   flex: 1;
   margin-horizontal: 7px;
@@ -94,10 +92,16 @@ export const TaskView = styled.View`
   gap: 10px;
 `;
 export const Toggler = styled.View<ToggleButtonProps>`
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 15px;
   background-color: ${props => (props?.isToggled ? '#fff' : '#FFFFFF')};
   position: absolute;
-  left: ${props => (props?.isToggled ? '28px' : '4px')};
+  left: ${props => (props?.isToggled ? '21px' : '4px')};
+`;
+export const PaginationView = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
 `;

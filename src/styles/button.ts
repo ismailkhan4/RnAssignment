@@ -10,10 +10,16 @@ export const ListButton = styled.TouchableOpacity`
   border-color: #1a1c1e;
 `;
 
-export const ToggleButtonView = styled.TouchableOpacity<{ isToggled: boolean }>`
-    width: 57px;
-    height: 29px;
-    border-radius: 15px;
-    justify-content: center;
-    background-color: ${(props) => (props.isToggled ? '#72CEBC' : '#72777F')};
+export const ToggleButtonView = styled.TouchableOpacity<{isToggled: boolean}>`
+  width: 51px;
+  height: 32px;
+  border-radius: 16px;
+  justify-content: center;
+  background-color: ${props => (props.isToggled ? '#72CEBC' : '#72777F')};
+`;
+export const PaginationButton = styled.TouchableOpacity<{disabled: boolean}>`
+  background-color: ${props => (props.disabled ? '#72777F' : '#72CEBC')};
+  width: 30%;
+  padding: 5px 0;
+  border: 2px solid black;
 `;
