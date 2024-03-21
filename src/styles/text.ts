@@ -21,3 +21,6 @@ export const CardBodyText = styled.Text<CardBodyProps>`
   font-size: 16px;
   padding-bottom: 3px;
 `;
+export const TaskTitle = styled.Text`
+  color: #000000;
+`;
