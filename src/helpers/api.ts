@@ -10,7 +10,7 @@ export const fetchReminders = async (currentPage: number) => {
         },
       },
     );
-    return response.data.docs;
+    return response.data;
   } catch (error) {
     console.error('Error fetching data:', error);
     return [];

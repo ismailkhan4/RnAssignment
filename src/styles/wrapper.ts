@@ -105,3 +105,9 @@ export const PaginationView = styled.View`
   align-items: center;
   padding: 10px 20px;
 `;
+export const SwipeView = styled.View`
+  justify-content: center;
+  align-items: center;
+  background-color: red;
+  padding-horizontal: 10px;
+`;

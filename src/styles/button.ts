@@ -21,5 +21,7 @@ export const PaginationButton = styled.TouchableOpacity<{disabled: boolean}>`
   background-color: ${props => (props.disabled ? '#72777F' : '#72CEBC')};
   width: 30%;
   padding: 5px 0;
+  align-self: center;
+  margin: 10px auto;
   border: 2px solid black;
 `;
