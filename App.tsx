@@ -1,118 +1,140 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useEffect, useState, useMemo } from 'react';
+import { Card, Header, ListItem, SearchBar } from './src/components';
+import { FilterView, ListView, MainView, RoutineView, SearchView, Wrapper } from './src/styles/wrapper';
+import { BGImage, FilterImage } from './src/styles/image';
+import { fetchReminders } from './src/helpers/api';
+import { CardText } from './src/styles/text';
+import { PaginationButton } from './src/styles/button';
+import { ActivityIndicator, RefreshControl, TouchableOpacity, View } from 'react-native';
+import { sortData } from './src/helpers/filter';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+const App: React.FC = () => {
+  const [reminders, setReminders] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [sortBy, setSortBy] = useState<'asc' | 'desc'>('desc');
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [swipedItem, setSwipedItem] = useState<string | null>(null);
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  useEffect(() => {
+    fetchData();
+  }, [currentPage, searchQuery]);
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  const toggleSortOrder = () => {
+    setSortBy(sortBy === 'asc' ? 'desc' : 'asc');
+  };
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+  const handleFilterButtonClick = () => {
+    toggleSortOrder();
+  };
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const fetchData = async () => {
+    setIsLoading(true);
+    const newData = await fetchReminders(currentPage);
+    const filteredData = applySearchFilter(newData.docs);
+    if (currentPage === 1) {
+      setReminders(filteredData);
+    } else {
+      setReminders(prevData => [...prevData, ...filteredData]);
+    }
+    setTotalPages(newData.totalPages);
+    setIsLoading(false);
+  };
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const sortedData = useMemo(() => sortData([...reminders], sortBy), [reminders, sortBy]);
+
+  const handleLoadMore = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const applySearchFilter = (data: any[]) => {
+    if (!searchQuery.trim()) {
+      return data;
+    }
+    return data.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())); // Filter data based on task name
+  };
+
+  const handleRefresh = () => {
+    setCurrentPage(1);
+    setIsRefreshing(true);
+    try {
+      fetchData();
+      setIsRefreshing(false)
+    } catch (error) {
+
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    setReminders(prevReminders => prevReminders.filter(reminder => reminder.id !== id));
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <MainView style={{ flex: 1 }}>
         <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+        <RoutineView>
+          <Card cardType='light' title='Morning Routine' text='Weekdays' time='7:00 AM' imageUrl={require('./src/assets/images/morning.png')} />
+          <Card cardType='dark' title='Night Routine' text='Everyday' time='9:00 PM' imageUrl={require('./src/assets/images/night.png')} />
+        </RoutineView>
+        <BGImage source={require('./src/assets/images/background.png')} resizeMode="cover"></BGImage>
+        <SearchView>
+          <SearchBar onSearch={setSearchQuery} />
+          <FilterView>
+            <TouchableOpacity onPress={handleFilterButtonClick}>
+              <FilterImage
+                source={require('./src/assets/images/filter.png')}
+              />
+            </TouchableOpacity>
+          </FilterView>
+        </SearchView>
+        <ListView
+          data={sortedData}
+          style={{ height: 500 }}
+          renderItem={({ item }: { item: any }) => (
+            <ListItem
+              type={item?.type}
+              name={item?.name}
+              image={item?.visualAidUrl}
+              onDelete={() => {
+                handleDelete(item.id);
+                setSwipedItem(null);
+              }}
+              onSwipeStart={() => setSwipedItem(item.id)}
+              isSwiped={swipedItem === item.id}
+            />
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+          )}
+          keyExtractor={(item, index) => index.toString()}
+          ListFooterComponent={() => (
+            <>
+              {isLoading ? (
+                <View style={{ flex: 1, height: 500, justifyContent: 'center', alignItems: 'center' }}>
+                  <ActivityIndicator size={50} />
+                </View>
+              ) : (
+                <PaginationButton onPress={handleLoadMore} disabled={currentPage === totalPages}>
+                  <CardText>Load More</CardText>
+                </PaginationButton>
+              )}
+            </>
+          )}
+          refreshControl={ // Add refreshControl prop
+            <RefreshControl
+              refreshing={isRefreshing} // Set refreshing state
+              onRefresh={handleRefresh} // Handle refresh event
+            />
+          }
+        />
+
+      </MainView>
+    </GestureHandlerRootView>
+  );
+};
 
 export default App;
